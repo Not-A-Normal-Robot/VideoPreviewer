@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Video Preview</title>
+<style>:root{color-scheme:dark light;font-family:system-ui}body{display:flex;flex-direction:column;gap:2em;text-align:center;scrollbar-gutter:stable both-edges}.row{display:flex;flex-direction:row;}main{display:flex;flex-direction:column;align-items:center;gap:2em}main .top{display:flex;flex-direction:column;max-width:60ch;gap:0.25em}video{width:calc(100vw-2em);width:calc(100svw-2em)}article{font-size:0.85rem}p{text-align:start;margin:auto;max-width:90ch}video{max-width:600px}</style>
+</head>
+<body>
+<h1>Video Previewer</h1>
+<main class="col">
+<div class="top">
+<label for="vu">Enter Video URL:</label>
+<input type="url"id="vu"placeholder="Enter MP4 URL">
+<button id="vb">Load Video</button>
+</div>
+<video id="vp"style="height:0;"controls></video>
+</main>
+<article>
+<p>
+Some video CDNs use special HTTP headers such that when you visit the links,
+the video starts downloading instead of playing in the browser. In such cases,
+it can be frustrating if you want to preview the video before downloading it.
+<br>
+This simple tool allows you to preview videos by entering the video URL in
+the input field above.
+<br>
+All data is processed and requested client-side. No data is sent to
+third party servers other than the URL you enter.
+</p>
+</article>
+<script>
+v=document.getElementById('vp')
+cb=()=>{
+u=document.getElementById('vu').value.trim()
+v.src=u,v.style.height=u.length==0?'0':'auto'
+}
+document.getElementById('vb').onclick=cb
+document.getElementById('vu').onkeydown=e=>e.key=='Enter'&&cb()
+</script>
+</body>
+</html>
