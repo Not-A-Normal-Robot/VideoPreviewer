@@ -1,42 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Video Preview</title>
-<style>:root{color-scheme:dark light;font-family:system-ui}body{display:flex;flex-direction:column;gap:2em;text-align:center;scrollbar-gutter:stable both-edges}.row{display:flex;flex-direction:row;}main{display:flex;flex-direction:column;align-items:center;gap:2em}main .top{display:flex;flex-direction:column;max-width:60ch;gap:0.25em}video{width:calc(100vw-2em);width:calc(100svw-2em)}article{font-size:0.85rem}p{text-align:start;margin:auto;max-width:90ch}video{max-width:600px}</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Preview</title>
+  <style>
+    :root {
+      color-scheme: dark light;
+      font-family: system-ui;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      gap: 2em;
+      text-align: center;
+      scrollbar-gutter: stable both-edges;
+    }
+    .row {
+      display: flex;
+      flex-direction: row;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2em;
+    }
+    main .top {
+      display: flex;
+      flex-direction: column;
+      max-width: 60ch;
+      gap: 0.25em;
+    }
+    video {
+      width: calc(100vw - 2em);
+      width: calc(100svw - 2em);
+    }
+    article {
+      font-size: 0.85rem;
+    }
+    p {
+      text-align: start;
+      margin: auto;
+      max-width: 90ch;
+    }
+    video {
+      max-width: 600px;
+    }
+  </style>
 </head>
 <body>
-<h1>Video Previewer</h1>
-<main class="col">
-<div class="top">
-<label for="vu">Enter Video URL:</label>
-<input type="url"id="vu"placeholder="Enter MP4 URL">
-<button id="vb">Load Video</button>
-</div>
-<video id="vp"style="height:0;"controls></video>
-</main>
-<article>
-<p>
-Some video CDNs use special HTTP headers such that when you visit the links,
-the video starts downloading instead of playing in the browser. In such cases,
-it can be frustrating if you want to preview the video before downloading it.
-<br>
-This simple tool allows you to preview videos by entering the video URL in
-the input field above.
-<br>
-All data is processed and requested client-side. No data is sent to
-third party servers other than the URL you enter.
-</p>
-</article>
-<script>
-v=document.getElementById('vp')
-cb=()=>{
-u=document.getElementById('vu').value.trim()
-v.src=u,v.style.height=u.length==0?'0':'auto'
-}
-document.getElementById('vb').onclick=cb
-document.getElementById('vu').onkeydown=e=>e.key=='Enter'&&cb()
-</script>
+  <h1>Video Previewer</h1>
+
+  <main class="col">
+    <div class="top">
+      <label for="video-url">Enter Video URL:</label>
+      <input type="url" id="video-url" placeholder="Enter MP4 URL">
+      <button id="load-video-btn">Load Video</button>
+    </div>
+    <p id="error-message" style="visibility: hidden;"><strong><em>The video failed to load.</em></strong></p>
+    
+    <video id="video-player" controls style="height: 0;">
+      Your browser does not support the video tag.
+    </video>
+  </main>
+  
+  <article>
+    <p>
+      Some video CDNs use special HTTP headers such that when you visit the links,
+      the video starts downloading instead of playing in the browser. In such cases,
+      it can be frustrating if you want to preview the video before downloading it.
+    </p>
+    <p>
+      This simple tool allows you to preview videos by entering the video URL in
+      the input field above.
+    </p>
+    <p>
+      All data is processed and requested client-side. No data is sent to
+      third party servers other than the URL you enter.
+    </p>
+    <p>
+      <strong>Tip</strong>: Append a <code>#</code> followed by the source URL, in the URL bar to automatically load it. <br>
+      Example: <code>https://not-a-normal-robot.github.io/VideoPreviewer/#https://example.com/video.mp4</code>
+    </p>
+  </article>
+  
+  <small>Made by <a href="https://not-a-normal-robot.github.io/">NOT_A_ROBOT</a></small>
+
+  <script>
+    /** @type {HTMLInputElement} */
+    const videoUrlInput = document.getElementById('video-url');
+    /** @type {HTMLButtonElement} */
+    const loadVideoButton = document.getElementById('load-video-btn');
+    /** @type {HTMLVideoElement} */
+    const videoPlayer = document.getElementById('video-player');
+    const errorMessage = document.getElementById('error-message');
+
+    function updateSrcFromHash() {
+      const hash = window.location.hash.substring(1);
+
+      if (hash && videoUrlInput.value !== hash) {
+        videoUrlInput.value = hash;
+        updateSrcFromInput();
+      }
+    }
+
+    updateSrcFromHash();
+    window.addEventListener("hashchange", updateSrcFromHash);
+
+    function updateSrcFromInput() {
+      const videoUrl = videoUrlInput.value.trim();
+      errorMessage.style.visibility = "hidden";
+      window.location.hash = `#${videoUrl}`;
+
+      if (videoUrl.length === 0) {
+        videoPlayer.style.height = '0';
+      } else {
+        videoPlayer.src = videoUrl;
+        videoPlayer.load();
+        videoPlayer.style.height = 'auto';
+      }
+    };
+
+    loadVideoButton.onclick = updateSrcFromInput;
+    videoUrlInput.addEventListener("keydown", (event) => {
+        if (event.key === 'Enter') {
+            updateSrcFromInput();
+        }
+    });
+    videoPlayer.addEventListener("error", () => errorMessage.style.visibility = "visible");
+    videoPlayer.addEventListener("loadeddata", () => errorMessage.style.visibility = "hidden");
+  </script>
 </body>
 </html>
