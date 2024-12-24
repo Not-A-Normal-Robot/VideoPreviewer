@@ -63,6 +63,7 @@
     <video id="video-player" controls style="height: 0;">
       Your browser does not support the video tag.
     </video>
+    <button id="download" style="display: none;">Download Video</button>
   </main>
   
   <article>
@@ -95,6 +96,7 @@
     /** @type {HTMLVideoElement} */
     const videoPlayer = document.getElementById('video-player');
     const errorMessage = document.getElementById('error-message');
+    const downloadButton = document.getElementById('download');
 
     function updateSrcFromHash() {
       const hash = window.location.hash.substring(1);
@@ -107,11 +109,31 @@
 
     updateSrcFromHash();
     window.addEventListener("hashchange", updateSrcFromHash);
+    downloadButton.addEventListener("click", () => {
+      const url = new URL(videoPlayer.src);
+      const domain = url.hostname;
+
+      const isTrusted = confirm(
+        "WARNING: This will redirect you to an external site.\n" +
+        `Click OK *if and only if* you TRUST the domain '${domain}'.\n` +
+        "It is your responsibility to be safe on the internet."
+      );
+
+      if (isTrusted) {
+        const a = document.createElement("a");
+        a.href = videoPlayer.src;
+        a.download = videoPlayer.src.split("/").pop();
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    })
 
     function updateSrcFromInput() {
       const videoUrl = videoUrlInput.value.trim();
       errorMessage.style.visibility = "hidden";
       window.location.hash = `#${videoUrl}`;
+      downloadButton.style.display = "none";
 
       if (videoUrl.length === 0) {
         videoPlayer.style.height = '0';
@@ -129,7 +151,10 @@
         }
     });
     videoPlayer.addEventListener("error", () => errorMessage.style.visibility = "visible");
-    videoPlayer.addEventListener("loadeddata", () => errorMessage.style.visibility = "hidden");
+    videoPlayer.addEventListener("loadeddata", () => {
+      errorMessage.style.visibility = "hidden";
+      downloadButton.style.display = "block";
+    });
   </script>
 </body>
 </html>
