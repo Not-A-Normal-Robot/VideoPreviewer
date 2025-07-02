@@ -1,14 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
+<!-- 
+Video Previewer — A simple tool to preview videos before downloading them
+Copyright (C) 2025  NOT_A_ROBOT
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Contact email: not_a_normal_robot at protonmail (dot) com.
+-->
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Preview</title>
+  <title>Video Previewer</title>
   <style>
     :root {
-      color-scheme: dark light;
+      color-scheme: dark;
+      background-color: #141318;
+      color: white;
       font-family: system-ui;
     }
+
+    * {
+      box-sizing: border-box;
+      line-height: 1.7;
+    }
+
     body {
       display: flex;
       flex-direction: column;
@@ -16,56 +45,297 @@
       text-align: center;
       scrollbar-gutter: stable both-edges;
     }
+
     .row {
       display: flex;
       flex-direction: row;
+      flex-wrap: wrap;
+      gap: 1em;
     }
+
     main {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 2em;
     }
-    main .top {
-      display: flex;
-      flex-direction: column;
-      max-width: 60ch;
-      gap: 0.25em;
-    }
+
     video {
       width: calc(100vw - 2em);
       width: calc(100svw - 2em);
     }
+
     article {
       font-size: 0.85rem;
     }
+
     p {
       text-align: start;
       margin: auto;
       max-width: 90ch;
     }
+
     video {
       max-width: 600px;
+      border: 1px dashed #c3bbfc;
+    }
+
+    button,
+    video,
+    input {
+      min-width: 48px;
+      min-height: 48px;
+    }
+
+    input {
+      width: 60ch;
+    }
+
+    .ig {
+      display: flex;
+      position: relative;
+      flex-grow: 1;
+      flex-shrink: 1;
+    }
+
+    .ig label {
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 0.75em;
+      height: 1em;
+      padding: 0.25rem 1rem;
+      pointer-events: none;
+      transition: color;
+    }
+
+    .ig:has(input:focus) label {
+      color: #c3bbfc;
+    }
+
+    .ig input {
+      padding-top: 1em;
+      max-width: calc(100vw - 1em);
+      flex-grow: 1;
+    }
+
+    input {
+      background-color: #313036;
+      border: none;
+      border-bottom: 1px solid white;
+      border-radius: 0.5em;
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+      padding-inline: 1em;
+      height: 64px;
+      font-size: 1em;
+      transition: border-color 0.2s;
+      flex-shrink: 1;
+    }
+
+    input:focus {
+      border-bottom: 1px solid #c3bbfc;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #c3bbfc;
+      color: #090038;
+      border: none;
+      border-radius: 0.5em;
+      padding-inline: 1.25em;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-size: 1em;
+      flex-grow: 1;
+    }
+
+    button svg {
+      width: 1.5em;
+      height: 1.5em;
+      vertical-align: middle;
+      margin-left: 0.5em;
+      fill: currentColor;
+    }
+
+    button:hover {
+      background-color: #b3a9f0;
+    }
+
+    #error-message {
+      display: none;
+      background-color: #ffaea4;
+      color: #220001;
+      text-align: start;
+      padding: 1em;
+      border-radius: 0.5em;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+      }
+    }
+
+    footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    footer ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: row;
+      gap: 1em;
+    }
+
+    @media screen and (max-width: 576px) {
+      footer ul {
+        flex-direction: column;
+      }
+    }
+
+    a {
+      color: #c3bbfc;
+    }
+
+    a:visited {
+      color: #c3bbfc;
+    }
+
+    dialog {
+      background-color: #3c3a41;
+      color: white;
+      border: 1px solid #c3bbfc;
+      border-radius: 0.5em;
+      padding: 1em;
+      max-width: 90vw;
+    }
+
+    dialog::backdrop {
+      background-color: #000B;
+    }
+
+    dialog .row {
+      margin-block-start: 1em;
+    }
+
+    button.sec {
+      background-color: #e8b4ca;
+      color: #1c0311;
+    }
+
+    button.sec:hover {
+      background-color: #d8a0b6
     }
   </style>
 </head>
+
 <body>
   <h1>Video Previewer</h1>
 
+  <noscript>
+    <strong>
+      This tool requires JavaScript to function properly, and it seems that JavaScript is disabled.
+    </strong>
+  </noscript>
+
   <main class="col">
-    <div class="top">
-      <label for="video-url">Enter Video URL:</label>
-      <input type="url" id="video-url" placeholder="Enter MP4 URL">
-      <button id="load-video-btn">Load Video</button>
+    <div class="row">
+      <div class="ig">
+        <label for="video-url">Video URL</label>
+        <input type="url" id="video-url" placeholder="Enter video URL...">
+      </div>
+      <button id="load-video-btn">
+        Load
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+        </svg>
+      </button>
     </div>
-    <p id="error-message" style="visibility: hidden;"><strong><em>The video failed to load.</em></strong></p>
-    
-    <video id="video-player" controls style="height: 0;">
+
+    <video id="video-player" controls style="height: 0; visibility: hidden;" aria-label="Video preview player">
       Your browser does not support the video tag.
     </video>
-    <button id="download" style="display: none;">Download Video</button>
+
+    <button id="download" style="display: none;" aria-label="Download current video file">
+      Download Video
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download"
+        viewBox="0 0 16 16" aria-hidden="true">
+        <path
+          d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+        <path
+          d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+      </svg>
+    </button>
+
+    <dialog id="dl" aria-labelledby="dl-dialog-title" aria-describedby="dl-dialog-description">
+      <h2 id="dl-dialog-title">
+        External Download Warning
+      </h2>
+      <p id="dl-dialog-description">
+        This will redirect you to your pasted link to download the video file. <br>
+        Proceed <em>if and only if</em> you TRUST the source. <br>
+        It is your responsibility to be safe on the internet. <br>
+        You will be redirected to: <strong id="domain"></strong>
+      </p>
+      <div class="row">
+        <button type="button" id="proceed-btn">
+          Proceed
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"
+            aria-hidden="true">
+            <path
+              d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+            <path
+              d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+          </svg>
+        </button>
+        <button type="button" class="sec" id="cancel-btn">
+          Cancel
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"
+            aria-hidden="true">
+            <path
+              d="M15 8a6.97 6.97 0 0 0-1.71-4.584l-9.874 9.875A7 7 0 0 0 15 8M2.71 12.584l9.874-9.875a7 7 0 0 0-9.874 9.874ZM16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0" />
+          </svg>
+        </button>
+      </div>
+    </dialog>
+
+    <div id="error-message" aria-live="assertive" role="alert">
+      <details>
+        <summary>
+          An error occurred while loading the video
+        </summary>
+        Unfortunately, there is not a reliable way to conveniently show the error cause here. <br>
+        Some browsers, like Firefox, may show the error in the video player itself, while others may not show
+        any error at all. <br>
+        If you're able to, please check the console for more details. <br>
+        Some common causes include:
+        <ul>
+          <li>
+            The video URL is invalid or does not point to a video file.
+          </li>
+          <li>
+            The video file is malformed or not supported by the browser.
+          </li>
+          <li>
+            The server is unreachable or did not respond with a valid video file.
+          </li>
+          <li>
+            Your connection is unstable.
+          </li>
+        </ul>
+      </details>
+    </div>
   </main>
-  
+
   <article>
     <p>
       Some video CDNs use special HTTP headers such that when you visit the links,
@@ -81,12 +351,30 @@
       third party servers other than the URL you enter.
     </p>
     <p>
-      <strong>Tip</strong>: Append a <code>#</code> followed by the source URL, in the URL bar to automatically load it. <br>
+      Playing audio is also supported.
+    </p>
+    <p>
+      <strong>Tip</strong>: Append a <code>#</code> followed by the source URL, in the URL bar to automatically load it.
+      <br>
       Example: <code>https://not-a-normal-robot.github.io/VideoPreviewer/#https://example.com/video.mp4</code>
     </p>
   </article>
-  
-  <small>Made by <a href="https://not-a-normal-robot.github.io/">NOT_A_ROBOT</a> | <a href="https://github.com/Not-A-Normal-Robot/VideoPreviewer">Source code</a></small>
+
+  <!-- <small>Made by <a href="https://not-a-normal-robot.github.io/">NOT_A_ROBOT</a> | <a
+      href="https://github.com/Not-A-Normal-Robot/VideoPreviewer">Source code</a></small> -->
+  <footer>
+    <ul>
+      <li>
+        Made by <a href="https://not-a-normal-robot.github.io/">NOT_A_ROBOT</a>
+      </li>
+      <li>
+        <a href="https://github.com/Not-A-Normal-Robot/VideoPreviewer">Source code</a>
+      </li>
+      <li>
+        Licensed under the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPLv3</a>
+      </li>
+    </ul>
+  </footer>
 
   <script>
     /** @type {HTMLInputElement} */
@@ -97,11 +385,18 @@
     const videoPlayer = document.getElementById('video-player');
     const errorMessage = document.getElementById('error-message');
     const downloadButton = document.getElementById('download');
+    /** @type {HTMLDialogElement} */
+    const dialog = document.getElementById('dl');
+    const domainElement = document.getElementById('domain');
+    const proceedDlButton = document.getElementById('proceed-btn');
+    const cancelDlButton = document.getElementById('cancel-btn');
 
-    function updateSrcFromHash() {
+    function updateSrcFromHash()
+    {
       const hash = window.location.hash.substring(1);
 
-      if (hash && videoUrlInput.value !== hash) {
+      if (hash && videoUrlInput.value !== hash)
+      {
         videoUrlInput.value = hash;
         updateSrcFromInput();
       }
@@ -109,52 +404,68 @@
 
     updateSrcFromHash();
     window.addEventListener("hashchange", updateSrcFromHash);
-    downloadButton.addEventListener("click", () => {
+    downloadButton.addEventListener("click", () =>
+    {
       const url = new URL(videoPlayer.src);
       const domain = url.hostname;
 
-      const isTrusted = confirm(
-        "WARNING: This will redirect you to an external site.\n" +
-        `Click OK *if and only if* you TRUST the domain '${domain}'.\n` +
-        "It is your responsibility to be safe on the internet."
-      );
+      domainElement.textContent = domain;
+      dialog.showModal();
+    });
+    proceedDlButton.addEventListener("click", () =>
+    {
+      dialog.close();
+      const a = document.createElement("a");
+      a.href = videoPlayer.src;
+      a.download = videoPlayer.src.split("/").pop();
+      a.style.display = "none";
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+    cancelDlButton.addEventListener("click", () => dialog.close());
 
-      if (isTrusted) {
-        const a = document.createElement("a");
-        a.href = videoPlayer.src;
-        a.download = videoPlayer.src.split("/").pop();
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-    })
-
-    function updateSrcFromInput() {
+    function updateSrcFromInput()
+    {
       const videoUrl = videoUrlInput.value.trim();
-      errorMessage.style.visibility = "hidden";
+      errorMessage.style.display = "none";
       window.location.hash = `#${videoUrl}`;
       downloadButton.style.display = "none";
 
-      if (videoUrl.length === 0) {
+      if (videoUrl.length === 0)
+      {
         videoPlayer.style.height = '0';
-      } else {
+        videoPlayer.style.visibility = 'hidden';
+      } else
+      {
         videoPlayer.src = videoUrl;
         videoPlayer.load();
         videoPlayer.style.height = 'auto';
+        videoPlayer.style.visibility = 'visible';
       }
     };
 
     loadVideoButton.onclick = updateSrcFromInput;
-    videoUrlInput.addEventListener("keydown", (event) => {
-        if (event.key === 'Enter') {
-            updateSrcFromInput();
-        }
+    videoUrlInput.addEventListener("keydown", (event) =>
+    {
+      if (event.key === 'Enter')
+      {
+        updateSrcFromInput();
+      }
     });
-    videoPlayer.addEventListener("error", () => errorMessage.style.visibility = "visible");
-    videoPlayer.addEventListener("loadeddata", () => {
-      errorMessage.style.visibility = "hidden";
+    videoPlayer.addEventListener("error", (e) =>
+    {
+      errorMessage.style.display = "block";
+      console.error("Video failed to load:", e);
+    });
+    videoPlayer.addEventListener("loadeddata", () =>
+    {
+      errorMessage.style.display = "none";
       downloadButton.style.display = "block";
     });
   </script>
 </body>
+
 </html>
