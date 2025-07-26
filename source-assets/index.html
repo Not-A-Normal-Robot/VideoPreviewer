@@ -358,94 +358,96 @@
   </footer>
 
   <script>
-    /** @type {HTMLInputElement} */
-    const videoUrlInput = document.getElementById('video-url');
-    /** @type {HTMLButtonElement} */
-    const loadVideoButton = document.getElementById('load-video-btn');
-    /** @type {HTMLVideoElement} */
-    const videoPlayer = document.getElementById('video-player');
-    const errorMessage = document.getElementById('error-message');
-    const downloadButton = document.getElementById('download');
-    /** @type {HTMLDialogElement} */
-    const dialog = document.getElementById('dl');
-    const domainElement = document.getElementById('domain');
-    const proceedDlButton = document.getElementById('proceed-btn');
-    const cancelDlButton = document.getElementById('cancel-btn');
-
-    function updateSrcFromHash()
     {
-      const hash = window.location.hash.substring(1);
+      /** @type {HTMLInputElement} */
+      const videoUrlInput = document.getElementById('video-url');
+      /** @type {HTMLButtonElement} */
+      const loadVideoButton = document.getElementById('load-video-btn');
+      /** @type {HTMLVideoElement} */
+      const videoPlayer = document.getElementById('video-player');
+      const errorMessage = document.getElementById('error-message');
+      const downloadButton = document.getElementById('download');
+      /** @type {HTMLDialogElement} */
+      const dialog = document.getElementById('dl');
+      const domainElement = document.getElementById('domain');
+      const proceedDlButton = document.getElementById('proceed-btn');
+      const cancelDlButton = document.getElementById('cancel-btn');
 
-      if (hash && videoUrlInput.value !== hash)
+      function updateSrcFromHash()
       {
-        videoUrlInput.value = hash;
-        updateSrcFromInput();
+        const hash = window.location.hash.substring(1);
+
+        if (hash && videoUrlInput.value !== hash)
+        {
+          videoUrlInput.value = hash;
+          updateSrcFromInput();
+        }
       }
+
+      updateSrcFromHash();
+      window.addEventListener("hashchange", updateSrcFromHash);
+      downloadButton.addEventListener("click", () =>
+      {
+        const url = new URL(videoPlayer.src);
+        const domain = url.hostname;
+
+        domainElement.textContent = domain;
+        dialog.showModal();
+      });
+      proceedDlButton.addEventListener("click", () =>
+      {
+        dialog.close();
+        const a = document.createElement("a");
+        a.href = videoPlayer.src;
+        a.download = videoPlayer.src.split("/").pop();
+        a.style.display = "none";
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      });
+      cancelDlButton.addEventListener("click", () => dialog.close());
+
+      function updateSrcFromInput()
+      {
+        const videoUrl = videoUrlInput.value.trim();
+        errorMessage.style.display = "none";
+        window.location.hash = `#${videoUrl}`;
+        downloadButton.style.display = "none";
+
+        if (videoUrl.length === 0)
+        {
+          videoPlayer.style.height = '0';
+          videoPlayer.style.visibility = 'hidden';
+        } else
+        {
+          videoPlayer.src = videoUrl;
+          videoPlayer.load();
+          videoPlayer.style.height = 'auto';
+          videoPlayer.style.visibility = 'visible';
+        }
+      };
+
+      loadVideoButton.onclick = updateSrcFromInput;
+      videoUrlInput.addEventListener("keydown", (event) =>
+      {
+        if (event.key === 'Enter')
+        {
+          updateSrcFromInput();
+        }
+      });
+      videoPlayer.addEventListener("error", (e) =>
+      {
+        errorMessage.style.display = "block";
+        console.error("Video failed to load:", e);
+      });
+      videoPlayer.addEventListener("loadeddata", () =>
+      {
+        errorMessage.style.display = "none";
+        downloadButton.style.display = "block";
+      });
     }
-
-    updateSrcFromHash();
-    window.addEventListener("hashchange", updateSrcFromHash);
-    downloadButton.addEventListener("click", () =>
-    {
-      const url = new URL(videoPlayer.src);
-      const domain = url.hostname;
-
-      domainElement.textContent = domain;
-      dialog.showModal();
-    });
-    proceedDlButton.addEventListener("click", () =>
-    {
-      dialog.close();
-      const a = document.createElement("a");
-      a.href = videoPlayer.src;
-      a.download = videoPlayer.src.split("/").pop();
-      a.style.display = "none";
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    });
-    cancelDlButton.addEventListener("click", () => dialog.close());
-
-    function updateSrcFromInput()
-    {
-      const videoUrl = videoUrlInput.value.trim();
-      errorMessage.style.display = "none";
-      window.location.hash = `#${videoUrl}`;
-      downloadButton.style.display = "none";
-
-      if (videoUrl.length === 0)
-      {
-        videoPlayer.style.height = '0';
-        videoPlayer.style.visibility = 'hidden';
-      } else
-      {
-        videoPlayer.src = videoUrl;
-        videoPlayer.load();
-        videoPlayer.style.height = 'auto';
-        videoPlayer.style.visibility = 'visible';
-      }
-    };
-
-    loadVideoButton.onclick = updateSrcFromInput;
-    videoUrlInput.addEventListener("keydown", (event) =>
-    {
-      if (event.key === 'Enter')
-      {
-        updateSrcFromInput();
-      }
-    });
-    videoPlayer.addEventListener("error", (e) =>
-    {
-      errorMessage.style.display = "block";
-      console.error("Video failed to load:", e);
-    });
-    videoPlayer.addEventListener("loadeddata", () =>
-    {
-      errorMessage.style.display = "none";
-      downloadButton.style.display = "block";
-    });
   </script>
 </body>
 
