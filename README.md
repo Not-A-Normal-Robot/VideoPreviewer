@@ -1,4 +1,9 @@
-# Video Previewer
+# Superseded
+
+This tool has been superseded by [PolyPreview](https://github.com/Not-A-Normal-Robot/PolyPreview), which supports images, video, and audio files,
+as well as adding partial offline support and more aggressive minification.
+
+## Video Previewer
 
 A very minimalistic client-side video previewer.
 
